@@ -9,7 +9,7 @@ namespace AdventOfCode.Solutions
 {
     public class Day2
     {
-        public static int Puzzle(string[] Input, int MaxRed, int MaxGreen, int MaxBlue)
+        public static int Puzzle(string[] Input, int MaxRed, int MaxGreen, int MaxBlue, bool Part2 = false)
         {
             if (File.Exists(@".\log.txt")) { File.Delete(@".\log.txt"); }
 
@@ -28,7 +28,8 @@ namespace AdventOfCode.Solutions
                 int GreenCubes = ExtractNumber(game, GreenGames).Max();
                 int MatchCubes = BlueCubes * RedCubes * GreenCubes;
 
-                if (BlueCubes <= MaxBlue && RedCubes <= MaxRed && GreenCubes <= MaxGreen)
+                if (Part2) { NeededCubes += MatchCubes; }
+                else if (BlueCubes <= MaxBlue && RedCubes <= MaxRed && GreenCubes <= MaxGreen)
                 {
                     File.AppendAllText(@".\log.txt", $"Game {Match} -  Blue Cubes: {BlueCubes}, Red Cubes: {RedCubes}, Green Cubes: {GreenCubes}" + Environment.NewLine);
                     File.AppendAllText(@".\log.txt", $"Conditions met, adding to sum..." + Environment.NewLine + Environment.NewLine);
@@ -38,7 +39,8 @@ namespace AdventOfCode.Solutions
                 else { File.AppendAllText(@".\log.txt", $"Conditions NOT met, skipping..." + Environment.NewLine + Environment.NewLine); }
             }
 
-            return MatchTotal;
+            if (Part2) { return NeededCubes; }
+            else { return MatchTotal; }
         }
 
         private static List<int> ExtractNumber(string Input, Regex Filter)
@@ -49,7 +51,7 @@ namespace AdventOfCode.Solutions
             string[] Cubes = Filter.Matches(Input).OfType<Match>().Select(match => match.Value).ToArray();
             foreach (string Match in Cubes)
             {
-                 Count.Add(int.Parse(Numbers.Replace(Match, string.Empty)));
+                Count.Add(int.Parse(Numbers.Replace(Match, string.Empty)));
             }
 
             return Count;
