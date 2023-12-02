@@ -1,0 +1,1 @@
+This project contains my solutions for the [Advent of Code 2023](https://adventofcode.com/) puzzles. You may examine and use the code displayed here as you wish, but it will of course reveal my solutions to each day's puzzles.
