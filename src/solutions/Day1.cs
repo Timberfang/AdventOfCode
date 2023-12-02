@@ -14,31 +14,22 @@ namespace AdventOfCode.Solutions
             int CalibrationOutput = 0; // Initialize for later use
             foreach (string CalibrationValue in Input)
             {
-                // string CleanedValue = CalibrationValue;
-                string CleanedValue = WordToNumber(CalibrationValue); // Convert "one" to "1", "two" to "2", and so on
-                CleanedValue = Regex.Replace(CleanedValue, "[^0-9]+", string.Empty); // Strip everything left but numbers
-
-                // Get the first and last numbers and combine them
-                string FirstValue = CleanedValue.First().ToString();
-                string LastValue = CleanedValue.Last().ToString();
-                int Calibration = int.Parse(FirstValue + LastValue);
-
+                int Calibration = WordToNumber(CalibrationValue, true); // Convert "one" to "1", "two" to "2", and so on
+                
                 // Give output and add to the total
-                Console.WriteLine($"Input {CalibrationValue} gives output {Calibration}!");
-                File.AppendAllText(@".\log.txt", $"Input {CalibrationValue} cleans into {CleanedValue} which gives output {Calibration}!" + Environment.NewLine);
+                File.AppendAllText(@".\log.txt", $"Input {CalibrationValue} gives output {Calibration}!" + Environment.NewLine);
                 CalibrationOutput += Calibration;
             }
+
             return CalibrationOutput;
         }
 
 
-        private static string WordToNumber(string Words)
+        private static int WordToNumber(string Words, bool ConvertWords = true)
         {
+            string Output = null;
             Dictionary<string, string> WordNumbers = new Dictionary<string, string>
             {
-                { "eightwo", "82" },  // Merged number edge case
-                { "twone", "21" },    // Merged number edge case
-                { "oneight", "18" },   // Merged number edge case
                 { "zero", "0" },
                 { "one", "1" },
                 { "two", "2" },
@@ -55,16 +46,44 @@ namespace AdventOfCode.Solutions
                 { "thirteen", "13" },
                 { "fourteen", "14" },
                 { "fifteen", "15" },
-                { "sixteen", "16" }
+                { "sixteen", "16" },
+                { "seventeen", "17" },
+                { "eighteen", "18" },
+                { "nineteen", "19" },
+                { "twenty", "20" },
             };
 
             // Create a regular expression pattern from the dictionary keys
-            string WordSearchPattern = string.Join("|", WordNumbers.Keys.Select(Regex.Escape));
-            Regex WordSearch = new Regex(WordSearchPattern);
+            string WordSearchPattern;
+            if (ConvertWords) { WordSearchPattern = string.Join("|", WordNumbers.Keys.Select(Regex.Escape)) + "|" + string.Join("|", WordNumbers.Values.Select(Regex.Escape)); }
+            else { WordSearchPattern = string.Join("|", WordNumbers.Values.Select(Regex.Escape)); } // Don't search for wordforms if WordSearchPattern == false
 
-            // Convert word numbers to actual numbers
-            string Output = WordSearch.Replace(Words, match => WordNumbers[match.Value]);
-            return Output;
+            Regex FirstNumber = new Regex(WordSearchPattern);
+            Regex LastNumber = new Regex(WordSearchPattern, RegexOptions.RightToLeft);
+
+            // Match numbers
+            Match FirstNumberMatch = FirstNumber.Match(Words);
+            Match LastNumberMatch = LastNumber.Match(Words);
+
+            if (WordNumbers.ContainsKey(FirstNumberMatch.Value) && ConvertWords)
+            {
+                Output += WordNumbers[FirstNumberMatch.Value];
+            }
+            else
+            {
+                Output += FirstNumberMatch.Value;
+            }
+
+            if (WordNumbers.ContainsKey(LastNumberMatch.Value) && ConvertWords)
+            {
+                Output += WordNumbers[LastNumberMatch.Value];
+            }
+            else
+            {
+                Output += LastNumberMatch.Value;
+            }
+
+            return int.Parse(Output);
         }
     }
 }
