@@ -2,8 +2,9 @@
 using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using AdventOfCode.Solutions;
 
-namespace Advent.Solutions
+namespace AdventOfCode.Solutions
 {
     class Program
     {
