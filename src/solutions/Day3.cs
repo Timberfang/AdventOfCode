@@ -9,31 +9,39 @@ namespace AdventOfCode.src.solutions
     {
         public static int Puzzle(string[] InputData)
         {
-            // int Output = CheckAdjacency(inputData);
             int Output = 0;
-            Coordinate CurrentValue = new Coordinate();
+            Coordinate CurrentValue = new Coordinate(InputData, 0, 0);
             CurrentValue.Grid = InputData;
 
-            for (int XCoord = 0;  XCoord < InputData.Length; XCoord++)
+            for (int XCoord = 0; XCoord < InputData.Length; XCoord++)
             {
                 for (int YCoord = 0; YCoord < InputData[XCoord].Length; YCoord++)
                 {
                     CurrentValue.XCoord = XCoord;
                     CurrentValue.YCoord = YCoord;
-                    CurrentValue.Char = InputData[CurrentValue.XCoord][CurrentValue.YCoord];
 
                     if (CurrentValue.IsDigit())
                     {
-                        Console.WriteLine($"Adding value {CurrentValue.Char}");
-                        CurrentValue.Value.Add(CurrentValue.Char);
-                        // List<char> CharList = CurrentValue.Value;
+                        List<char> CurrentNumber = new List<char>(); // Initialize CurrentNumber for each digit
+                        int lookaheadYCoord = YCoord;
+                        bool AdjacentSymbol = false; // Initialize as false so it will only be true if a symbol is found in the current loop
 
-                        Coordinate NextValue = CurrentValue.Look();
-                        while (NextValue != null && NextValue.IsDigit()) { CurrentValue.Value.Append(NextValue.Char); CurrentValue.XCoord = NextValue.XCoord; CurrentValue.YCoord = NextValue.YCoord; NextValue = CurrentValue.Look(); }
+                        while (CurrentValue.Look() != null && CurrentValue.IsDigit()) // Lookahead for numbers
+                        {
+                            if (!AdjacentSymbol) { AdjacentSymbol = CheckAdjacent(InputData, XCoord, lookaheadYCoord); }
+                            CurrentNumber.Add(CurrentValue.Char);
+                            lookaheadYCoord = CurrentValue.YCoord + 1; // Update the lookahead coordinate
+                            CurrentValue = CurrentValue.Look();
+                        }
 
-                        string charString = new string(CurrentValue.Value.ToArray());
-                        Output += int.Parse(charString);
-                        CurrentValue.Value.Clear();
+                        if (AdjacentSymbol) // Add if an adjacent symbol was detected
+                        {
+                            string charString = new string(CurrentNumber.ToArray());
+                            Console.WriteLine(charString);
+                            Output += int.Parse(charString);
+                        }
+
+                        YCoord = lookaheadYCoord; // Skip to the coordinate the lookahead stopped on
                     }
                 }
             }
@@ -41,72 +49,7 @@ namespace AdventOfCode.src.solutions
             return Output;
         }
 
-        // private static int CheckAdjacency(string[] input)
-        // {
-        //     int Output = 0;
-        // 
-        //     for (int XCoord = 0; XCoord < input.Length; XCoord++)
-        //     {
-        //         for (int YCoord = 0; YCoord < input[XCoord].Length; YCoord++) // Travels from left to right, top to bottom
-        //         {
-        //             char CurrentChar = input[XCoord][YCoord];
-        //     
-        //             // Check if it's a number
-        //             if (char.IsDigit(CurrentChar))
-        //             {
-        //                 List<char> CurrentNumber = new List<char>();
-        //                 CurrentNumber.Add(CurrentChar);
-        //     
-        //                 if (YCoord > 0) // Look behind to find negative numbers
-        //                 {
-        //                     char PreviousChar = input[XCoord][YCoord - 1];
-        //                 
-        //                     if (PreviousChar == '-') { CurrentNumber.Insert(0, PreviousChar); }
-        //                 }
-        //     
-        //                 Check adjacency and handle accordingly
-        //                 AdjacentSymbol = CheckAdjacentElements(input, XCoord, YCoord);
-        //     
-        //     
-        //     
-        //                 int NumberInteger = int.Parse(CurrentNumber.ToArray());
-        //                 Console.WriteLine($"Number found: {NumberInteger}");
-        //                 if (AdjacentSymbol)
-        //                 {
-        //                     Console.WriteLine("...And it has an adjacent symbol!");
-        //                     Output += NumberInteger;
-        //                 }
-        //             }
-        //         }
-        //     }
-        // 
-        //     return Output;
-        // }
-
-        // private static List<char> LookAhead(string[] Grid, int Row, int Col)
-        // private static void LookAhead(string[] Grid, int Row, int Col)
-        // {
-        //     bool AdjacentSymbol = false;
-        //     int LookAheadCoord = Col + 1; // Look ahead to find multi-digit numbers
-        //     if (LookAheadCoord < Grid.Length)
-        //     {
-        //         char NextChar = Grid[Row][LookAheadCoord];
-        // 
-        //         while (char.IsDigit(NextChar))
-        //         {
-        //             if (!AdjacentSymbol) { AdjacentSymbol = CheckAdjacentElements(Grid, Row, LookAheadCoord); }
-        // 
-        //             CurrentNumber.Add(input[XCoord][LookAheadCoord]);
-        //             LookAheadCoord++;
-        //             if (LookAheadCoord < input.Length) { NextChar = input[XCoord][LookAheadCoord]; }
-        //             else { NextChar = input[XCoord + 1][YCoord]; }
-        //         }
-        // 
-        //         YCoord = LookAheadCoord; // Skip to the end of the number
-        //     }
-        // }
-
-        private static bool CheckAdjacentElements(string[] Grid, int Row, int Col)
+        private static bool CheckAdjacent(string[] Grid, int Row, int Col)
         {
             // Define the eight possible directions (up, down, left, right, and diagonals)
             int[] RowDirs = { -1, -1, -1,  0, 0,  1, 1, 1 };
@@ -138,8 +81,23 @@ namespace AdventOfCode.src.solutions
             public string[] Grid;
             public int XCoord;
             public int YCoord;
-            public char Char;
             public List<char> Value = new List<char>();
+            public char Char
+            {
+                get
+                {
+                    // Ensure that the coordinates are within bounds
+                    if (XCoord >= 0 && XCoord < Grid.Length && YCoord >= 0 && YCoord < Grid[XCoord].Length)
+                    {
+                        return Grid[XCoord][YCoord];
+                    }
+                    else
+                    {
+                        // Handle out-of-bounds coordinates gracefully
+                        return '\0';
+                    }
+                }
+            }
 
             public bool IsDigit()
             {
@@ -175,19 +133,23 @@ namespace AdventOfCode.src.solutions
 
             public Coordinate Look(bool Behind = false)
             {
-                Coordinate NextCharacter = new Coordinate();
-                NextCharacter.Grid = this.Grid;
-                if (!Behind) { NextCharacter.YCoord = this.YCoord + 1; }
-                else { NextCharacter.YCoord = this.YCoord - 1; }
+                Coordinate NextCharacter = new Coordinate(this.Grid, this.XCoord, this.YCoord);
+                if (!Behind) { NextCharacter.YCoord++; }
+                else { NextCharacter.YCoord--; }
                 NextCharacter.XCoord = this.XCoord;
 
-                if (NextCharacter.YCoord > 0 && NextCharacter.YCoord < NextCharacter.Grid.Length)
+                if (NextCharacter.YCoord >= 0 && NextCharacter.YCoord <= NextCharacter.Grid.Length)
                 {
-                    NextCharacter.Char = NextCharacter.Grid[NextCharacter.XCoord][NextCharacter.YCoord];
-
                     return NextCharacter;
                 }
                 else { return null; }
+            }
+
+            public Coordinate(string[] grid, int xCoord, int yCoord)
+            {
+                Grid = grid;
+                XCoord = xCoord;
+                YCoord = yCoord;
             }
         }
     }
