@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace AdventOfCode.src.solutions
@@ -10,9 +9,6 @@ namespace AdventOfCode.src.solutions
     {
         public static int Puzzle(string[] inputData)
         {
-            // Input Data
-            // string[] inputData = Input.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-
             int Output = CheckAdjacency(inputData);
 
             return Output;
@@ -23,11 +19,11 @@ namespace AdventOfCode.src.solutions
             bool AdjacentSymbol = false;
             int Output = 0;
 
-            for (int x = 0; x < input.Length; x++)
+            for (int XCoord = 0; XCoord < input.Length; XCoord++)
             {
-                for (int y = 0; y < input[x].Length; y++) // Travels from left to right, top to bottom
+                for (int YCoord = 0; YCoord < input[XCoord].Length; YCoord++) // Travels from left to right, top to bottom
                 {
-                    char CurrentChar = input[x][y];
+                    char CurrentChar = input[XCoord][YCoord];
 
                     // Check if it's a number
                     if (char.IsDigit(CurrentChar))
@@ -35,32 +31,32 @@ namespace AdventOfCode.src.solutions
                         List<char> CurrentNumber = new List<char>();
                         CurrentNumber.Add(CurrentChar);
 
-                        // if (y > 0) // Look behind to find negative numbers
+                        // if (YCoord > 0) // Look behind to find negative numbers
                         // {
-                        //     char PreviousChar = input[x][y - 1];
+                        //     char PreviousChar = input[XCoord][YCoord - 1];
                         // 
                         //     if (PreviousChar == '-') { CurrentNumber.Insert(0, PreviousChar); }
                         // }
 
                         // Check adjacency and handle accordingly
-                        AdjacentSymbol = CheckAdjacentElements(input, x, y);
+                        AdjacentSymbol = CheckAdjacentElements(input, XCoord, YCoord);
 
-                        int z = y + 1; // Look ahead to find multi-digit numbers
-                        if (z < input.Length)
+                        int LookAheadCoord = YCoord + 1; // Look ahead to find multi-digit numbers
+                        if (LookAheadCoord < input.Length)
                         {
-                            char NextChar = input[x][z];
+                            char NextChar = input[XCoord][LookAheadCoord];
                         
                             while (char.IsDigit(NextChar))
                             {
-                                if(!AdjacentSymbol) { AdjacentSymbol = CheckAdjacentElements(input, x, z); }
+                                if(!AdjacentSymbol) { AdjacentSymbol = CheckAdjacentElements(input, XCoord, LookAheadCoord); }
                         
-                                CurrentNumber.Add(input[x][z]);
-                                z++;
-                                if (z < input.Length) { NextChar = input[x][z]; }
-                                else { NextChar = input[x+1][y]; }
+                                CurrentNumber.Add(input[XCoord][LookAheadCoord]);
+                                LookAheadCoord++;
+                                if (LookAheadCoord < input.Length) { NextChar = input[XCoord][LookAheadCoord]; }
+                                else { NextChar = input[XCoord+1][YCoord]; }
                             }
                         
-                            y = z; // Skip to the end of the number
+                            YCoord = LookAheadCoord; // Skip to the end of the number
                         }
 
                         int NumberInteger = int.Parse(CurrentNumber.ToArray());
@@ -77,24 +73,24 @@ namespace AdventOfCode.src.solutions
             return Output;
         }
 
-        private static bool CheckAdjacentElements(string[] grid, int row, int col)
+        private static bool CheckAdjacentElements(string[] Grid, int Row, int Col)
         {
             // Define the eight possible directions (up, down, left, right, and diagonals)
-            int[] rowDirs = { -1, -1, -1,  0, 0,  1, 1, 1 };
-            int[] colDirs = { -1,  0,  1, -1, 1, -1, 0, 1 };
+            int[] RowDirs = { -1, -1, -1,  0, 0,  1, 1, 1 };
+            int[] ColDirs = { -1,  0,  1, -1, 1, -1, 0, 1 };
 
             for (int i = 0; i < 8; i++)
             {
-                int newRow = row + rowDirs[i];
-                int newCol = col + colDirs[i];
+                int NewRow = Row + RowDirs[i];
+                int NewCol = Col + ColDirs[i];
 
                 // Check if the new position is within the boundaries of the grid
-                if (newRow >= 0 && newRow < grid.Length && newCol >=0 && newCol < grid[newRow].Length)
+                if (NewRow >= 0 && NewRow < Grid.Length && NewCol >=0 && NewCol < Grid[NewRow].Length)
                 {
-                    char adjacentChar = grid[newRow][newCol];
+                    char AdjacentChar = Grid[NewRow][NewCol];
 
                     // Compare the current character with the adjacent character
-                    if (!char.IsDigit(adjacentChar) && adjacentChar != '.')
+                    if (!char.IsDigit(AdjacentChar) && AdjacentChar != '.')
                     {
                         return true;
                     }
