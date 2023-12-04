@@ -28,17 +28,10 @@ namespace AdventOfCode.src.solutions
 
                         while (CurrentValue.Look() != null && CurrentValue.IsDigit()) // Lookahead for numbers
                         {
-                            if (!AdjacentSymbol) { AdjacentSymbol = CheckAdjacent(InputData, XCoord, lookaheadYCoord); }
+                            if (!AdjacentSymbol) { AdjacentSymbol = CurrentValue.SymbolAdjacent(); }
                             CurrentNumber.Add(CurrentValue.Char);
                             lookaheadYCoord = CurrentValue.YCoord + 1; // Update the lookahead coordinate
                             CurrentValue = CurrentValue.Look();
-                        }
-
-                        if (AdjacentSymbol) // Add if an adjacent symbol was detected
-                        {
-                            string charString = new string(CurrentNumber.ToArray());
-                            Console.WriteLine(charString);
-                            Output += int.Parse(charString);
                         }
 
                         YCoord = lookaheadYCoord; // Skip to the coordinate the lookahead stopped on
@@ -47,33 +40,6 @@ namespace AdventOfCode.src.solutions
             }
 
             return Output;
-        }
-
-        private static bool CheckAdjacent(string[] Grid, int Row, int Col)
-        {
-            // Define the eight possible directions (up, down, left, right, and diagonals)
-            int[] RowDirs = { -1, -1, -1,  0, 0,  1, 1, 1 };
-            int[] ColDirs = { -1,  0,  1, -1, 1, -1, 0, 1 };
-
-            for (int i = 0; i < 8; i++)
-            {
-                int NewRow = Row + RowDirs[i];
-                int NewCol = Col + ColDirs[i];
-
-                // Check if the new position is within the boundaries of the grid
-                if (NewRow >= 0 && NewRow < Grid.Length && NewCol >=0 && NewCol < Grid[NewRow].Length)
-                {
-                    char AdjacentChar = Grid[NewRow][NewCol];
-
-                    // Compare the current character with the adjacent character
-                    if (!char.IsDigit(AdjacentChar) && AdjacentChar != '.')
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
         }
 
         class Coordinate
@@ -109,17 +75,17 @@ namespace AdventOfCode.src.solutions
                 // Define the eight possible directions (up, down, left, right, and diagonals)
                 int[] RowDirs = { -1, -1, -1, 0, 0, 1, 1, 1 };
                 int[] ColDirs = { -1, 0, 1, -1, 1, -1, 0, 1 };
-
+            
                 for (int i = 0; i < 8; i++)
                 {
                     int NewRow = this.XCoord + RowDirs[i];
                     int NewCol = this.YCoord + ColDirs[i];
-
+            
                     // Check if the new position is within the boundaries of the grid
                     if (NewRow >= 0 && NewRow < this.Grid.Length && NewCol >= 0 && NewCol < this.Grid[NewRow].Length)
                     {
                         char AdjacentChar = this.Grid[NewRow][NewCol];
-
+            
                         // Compare the current character with the adjacent character
                         if (!char.IsDigit(AdjacentChar) && AdjacentChar != '.')
                         {
@@ -127,7 +93,7 @@ namespace AdventOfCode.src.solutions
                         }
                     }
                 }
-
+            
                 return false;
             }
 
