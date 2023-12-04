@@ -1,14 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AdventOfCode.src.tools
+﻿namespace AdventOfCode.src.tools
 {
     public class Grid
     {
         private char[,] grid;
+        private int currentRow;
+        private int currentCol;
+        public char currentElement
+        { 
+            get
+            {
+                if (IsValidPosition(currentRow,currentCol)) { return GetElement(currentRow,currentCol); }
+                else { throw new IndexOutOfRangeException("Position exceeds grid boundaries"); } // Invalid position handling
+            }
+        }
 
         public Grid(string[] input)
         {
@@ -17,6 +21,7 @@ namespace AdventOfCode.src.tools
             int cols = input[0].Length;
             grid = new char[rows, cols];
 
+            // Set grid data to input grid data
             for (int rowNum = 0; rowNum < rows; rowNum++)
             {
                 for (int colNum = 0; colNum < cols; colNum++)
@@ -24,12 +29,25 @@ namespace AdventOfCode.src.tools
                     grid[rowNum, colNum] = input[rowNum][colNum];
                 }
             }
+
+            // Set initial position
+            currentRow = 0;
+            currentCol = 0;
         }
 
         public char GetElement(int row, int col)
         {
             // Return element at specified position
             return grid[row, col];
+        }
+
+        public void SetElement (int row, int col, char input)
+        {
+            if (IsValidPosition (row, col))
+            {
+                // Set grid position to given character
+                grid[row, col] = input;
+            }
         }
 
         public bool IsValidPosition(int row, int col)
@@ -51,7 +69,7 @@ namespace AdventOfCode.src.tools
                         // Skip current position
                         continue;
                     }
-                    else if (IsValidPosition(rowNum, colNum));
+                    else if (IsValidPosition(rowNum, colNum))
                     {
                         neighbors.Add(GetElement(row, col));
                     }
@@ -60,5 +78,49 @@ namespace AdventOfCode.src.tools
 
             return neighbors.ToArray();
         }
+
+        public void Move(Direction direction)
+        {
+            switch (direction)
+            {
+                case Direction.Up:
+                    if (IsValidPosition(currentRow - 1, currentCol)) { currentRow--; }
+                    else { throw new IndexOutOfRangeException("Position exceeds grid boundaries"); }
+                    break;
+                case Direction.Down:
+                    if (IsValidPosition(currentRow + 1, currentCol)) { currentRow++; }
+                    else { throw new IndexOutOfRangeException("Position exceeds grid boundaries"); }
+                    break;
+                case Direction.Left:
+                    if (IsValidPosition(currentRow, currentCol - 1)) { currentCol--; }
+                    else { throw new IndexOutOfRangeException("Position exceeds grid boundaries"); }
+                    break;
+                case Direction.Right:
+                    if (IsValidPosition(currentRow , currentCol + 1)) { currentCol++; }
+                    else { throw new IndexOutOfRangeException("Position exceeds grid boundaries"); }
+                    break;
+                case Direction.UpLeft:
+                    if (IsValidPosition(currentRow - 1, currentCol - 1)) { currentRow--; currentCol--; }
+                    else { throw new IndexOutOfRangeException("Position exceeds grid boundaries"); }
+                    break;
+                case Direction.UpRight:
+                    if (IsValidPosition(currentRow - 1, currentCol + 1)) { currentRow--; currentCol++; }
+                    else { throw new IndexOutOfRangeException("Position exceeds grid boundaries"); }
+                    break;
+                case Direction.DownLeft:
+                    if (IsValidPosition(currentRow + 1, currentCol - 1)) { currentRow++; currentCol--; }
+                    else { throw new IndexOutOfRangeException("Position exceeds grid boundaries"); }
+                    break;
+                case Direction.DownRight:
+                    if (IsValidPosition(currentRow + 1, currentCol + 1)) { currentRow++; currentCol++; }
+                    else { throw new IndexOutOfRangeException("Position exceeds grid boundaries"); }
+                    break;
+                default:
+                    // Handle unexpected direction
+                    break;
+            }
+        }
+
+        public enum Direction { Up, Down, Left, Right, UpLeft, UpRight, DownLeft, DownRight }
     }
 }
