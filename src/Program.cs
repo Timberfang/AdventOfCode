@@ -12,8 +12,9 @@ namespace AdventOfCode.src
          {
             // int Output = Day1.Puzzle(File.ReadAllLines(".\\input-day1.txt"));
             // var Output = Day2.Puzzle(File.ReadAllLines(".\\input-day2.txt"),12,13,14,true);
-            int Output = Day3.Puzzle(File.ReadAllLines(".\\input-day3.txt"));
-            Console.WriteLine($"Output: {Output}");
+            // int Output = Day3.Puzzle(File.ReadAllLines(".\\input-day3.txt", true));
+            Day3.Puzzle(File.ReadAllLines(".\\input-day3.txt"), true);
+            // Console.WriteLine($"Output: {Output}");
         }
     }
 }
