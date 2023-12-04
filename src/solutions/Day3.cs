@@ -123,6 +123,7 @@ namespace AdventOfCode.src.solutions
                                         InputGrid.MovePosition(Grid.Direction.Right); // Look forwards
                                         currentCol = InputGrid.currentPosition.Col; // Move position forwards for loop
                                     }
+                                    else { break; }
                                 }
 
                                 ValidNumber = new string(CurrentNumber.ToArray()); }
