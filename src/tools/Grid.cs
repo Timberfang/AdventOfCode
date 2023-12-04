@@ -6,11 +6,20 @@
         private int currentRow;
         private int currentCol;
         public char currentElement
-        { 
+        {
             get
             {
-                if (IsValidPosition(currentRow,currentCol)) { return GetElement(currentRow,currentCol); }
+                if (IsValidPosition(currentRow, currentCol)) { return GetElement(currentRow, currentCol); }
                 else { throw new IndexOutOfRangeException("Position exceeds grid boundaries"); } // Invalid position handling
+            }
+        }
+        public (int Row, int Col) currentPosition
+        {
+            get
+            {
+                if (IsValidPosition(currentRow, currentCol)) { return (currentRow, currentCol); }
+                else { throw new IndexOutOfRangeException("Position exceeds grid boundaries"); } // Invalid position handling
+                return (currentRow, currentCol);
             }
         }
 
@@ -71,7 +80,7 @@
                     }
                     else if (IsValidPosition(rowNum, colNum))
                     {
-                        neighbors.Add(GetElement(row, col));
+                        neighbors.Add(GetElement(rowNum, colNum));
                     }
                 }
             }
@@ -79,7 +88,7 @@
             return neighbors.ToArray();
         }
 
-        public void Move(Direction direction)
+        public void MovePosition(Direction direction)
         {
             switch (direction)
             {
@@ -119,6 +128,11 @@
                     // Handle unexpected direction
                     break;
             }
+        }
+        public void SetPosition(int row, int col)
+        {
+            if (IsValidPosition(row, col)) { currentRow = row; currentCol = col; }
+            else { throw new IndexOutOfRangeException("Position exceeds grid boundaries"); }
         }
 
         public enum Direction { Up, Down, Left, Right, UpLeft, UpRight, DownLeft, DownRight }
