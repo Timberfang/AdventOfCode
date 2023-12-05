@@ -19,7 +19,6 @@
             {
                 if (IsValidPosition(currentRow, currentCol)) { return (currentRow, currentCol); }
                 else { throw new IndexOutOfRangeException("Position exceeds grid boundaries"); } // Invalid position handling
-                return (currentRow, currentCol);
             }
         }
 
