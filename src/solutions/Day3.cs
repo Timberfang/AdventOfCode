@@ -40,7 +40,11 @@ namespace AdventOfCode.src.solutions
 
                         while (Char.IsDigit(InputGrid.currentElement))
                         {
-                            if (!AdjacentSymbol) { AdjacentSymbol = (CheckNeighbors(InputGrid, InputGrid.currentPosition.Row, InputGrid.currentPosition.Col, false)).Item1; } // Item1 = ValidNeighbor
+                            if (!AdjacentSymbol)
+                            {
+                                NeighborInfo NeighborSymbol = CheckNeighbors(InputGrid, InputGrid.currentPosition.Row, InputGrid.currentPosition.Col);
+                                AdjacentSymbol = NeighborSymbol.Character != '\0';
+                            }
                             CurrentNumber.Add(InputGrid.currentElement);
                             InputGrid.MovePosition(Grid.Direction.Right);
                             currentCol = InputGrid.currentPosition.Col; // Move position forwards for loop
@@ -60,122 +64,76 @@ namespace AdventOfCode.src.solutions
         {
             int Output = 0;
             Grid InputGrid = new Grid(input);
+            Dictionary<(int Row, int Col), List<int>> ValidNumbers = new Dictionary<(int, int), List<int>>(); // Record numbers adjacent to asterisk characters
 
+            // Process numbers
+            NeighborInfo NeighborSymbol = new NeighborInfo();
             for (int currentRow = 0; currentRow < input.Length; currentRow++)
             {
                 for (int currentCol = 0; currentCol < input.Length; currentCol++)
                 {
                     InputGrid.SetPosition(currentRow, currentCol);
-                    int UsedPosition = 0;
-
-                    if (InputGrid.currentElement == '*')
+        
+                    if (Char.IsDigit(InputGrid.currentElement) && InputGrid.currentElement != '*')
                     {
-                        (bool ValidNeighbor, int Position) Target = CheckNeighbors(InputGrid, InputGrid.currentPosition.Row, InputGrid.currentPosition.Col, true, UsedPosition);
-                        if (Target.ValidNeighbor)
+                        List<char> CurrentNumber = new List<char>(); // Store current number as a list of characters to be assembled later into an integer
+                        bool AdjacentSymbol = false; // Records whether at least one digit has an adjacent asterisk - if it doesn't no checking is necessary
+
+                        while (Char.IsDigit(InputGrid.currentElement))
                         {
-                            string ValidNumber = "0"; // Initialize ValidNumber for each digit
-                            UsedPosition = Target.Position; // Skip value for searching
-
-                            // Find number
-                            Direction NewPosition = Direction.DownLeft; // Initialized default
-                            switch (Target.Position) // Find direction from CheckNeighbors
+                            if (!AdjacentSymbol)
                             {
-                                case 0: { NewPosition = Direction.DownLeft; break; }
-                                case 1: { NewPosition = Direction.Down; break; }
-                                case 2: { NewPosition = Direction.DownRight; break; }
-                                case 3: { NewPosition = Direction.Left; break; }
-                                case 4: { NewPosition = Direction.Right; break; }
-                                case 6: { NewPosition = Direction.UpLeft; break; }
-                                case 7: { NewPosition = Direction.Up; break; }
-                                case 8: { NewPosition = Direction.UpRight; break; }
-                                default: { break; } // Invalid number check
+                                NeighborSymbol = CheckNeighbors(InputGrid, InputGrid.currentPosition.Row, InputGrid.currentPosition.Col);
+                                AdjacentSymbol = NeighborSymbol.Character == '*';
+                            }
+                            CurrentNumber.Add(InputGrid.currentElement);
+                            InputGrid.MovePosition(Grid.Direction.Right);
+                            currentCol = InputGrid.currentPosition.Col;
+                        }
+        
+                        if (AdjacentSymbol)
+                        {
+                            if (!ValidNumbers.ContainsKey((NeighborSymbol.Row,NeighborSymbol.Col)))
+                            {
+                                ValidNumbers[(NeighborSymbol.Row, NeighborSymbol.Col)] = new List<int>();
                             }
 
-                            InputGrid.MovePosition(NewPosition);
-                            (int Row, int Col) StoredPosition = InputGrid.currentPosition;
-
-                            // InputGrid.MovePosition(Grid.Direction.Left);
-                            if (Char.IsDigit(InputGrid.currentElement)) // Don't need to check if symbol since we already know that it's near a '*'
-                            {
-                                List<char> CurrentNumber = new List<char>(); // Initialize CurrentNumber for each digit
-
-                                while (Char.IsDigit(InputGrid.currentElement))
-                                {
-                                    CurrentNumber.Insert(0, InputGrid.currentElement); // Add to beginning since we are working backwards
-                                    Console.WriteLine($"Found number:{InputGrid.currentElement}");
-                                    if (InputGrid.IsValidPosition(InputGrid.currentPosition.Row, InputGrid.currentPosition.Col - 1)) {
-                                        InputGrid.MovePosition(Grid.Direction.Left); // Look back
-                                        currentCol = InputGrid.currentPosition.Col; // Move position backwards for loop
-                                    }
-                                    else { break; }
-                                }
-
-                                InputGrid.SetPosition(StoredPosition.Row,StoredPosition.Col); // Restore stored position
-                                currentCol = InputGrid.currentPosition.Col + 1; // Update position to next value
-
-                                InputGrid.MovePosition(Grid.Direction.Right);
-                                while (Char.IsDigit(InputGrid.currentElement))
-                                {
-                                    CurrentNumber.Add(InputGrid.currentElement);
-                                    Console.WriteLine($"Found number:{InputGrid.currentElement}");
-                                    if (InputGrid.IsValidPosition(InputGrid.currentPosition.Row, InputGrid.currentPosition.Col + 1))
-                                    {
-                                        InputGrid.MovePosition(Grid.Direction.Right); // Look forwards
-                                        currentCol = InputGrid.currentPosition.Col; // Move position forwards for loop
-                                    }
-                                    else { break; }
-                                }
-
-                                ValidNumber = new string(CurrentNumber.ToArray()); }
-
-                                if (ValidNumber != "0") { Console.WriteLine($"Valid Number: {ValidNumber}"); } // Exclude default values
-                                Output += int.Parse(ValidNumber);
-                            }
+                            ValidNumbers[(NeighborSymbol.Row, NeighborSymbol.Col)].Add(int.Parse(new string(CurrentNumber.ToArray())));
                         }
                     }
                 }
+            }
+
+            // Process the numbers associated with each asterisk
+            foreach (var Number in ValidNumbers)
+            {
+                if (Number.Value.Count > 1)
+                {
+                    // If there are multiple numbers associated with the same asterisk, process them, else skip the number as it is invalid
+                    int product = Number.Value[0] * Number.Value[1];
+                    Console.WriteLine($"Match detected at ({Number.Key.Row},{Number.Key.Col}): {Number.Value[0]} * {Number.Value[1]} = {product}");
+                    Output += product;
+                }
+            }
+
             return Output;
         }
 
-        // Part 2
-        // DONE: CheckNeighbors for '*'
-        // DONE: If neighbors of '*' include a number, save position, then move back till numbers end, return to position, then move forward till numbers end
-        // DONE: Add three sets of numbers together to create number
-        // If that is the only number found, then stop
-        // If another number is found, do the same process and multiply the two numbers together
-        // Return output of multiplied numbers
-
-        public static (bool, int) CheckNeighbors(Grid input, int row, int col, bool part2, int skip = 0)
+        public static NeighborInfo CheckNeighbors(Grid input, int row, int col) // Check numbers for neighboring symbols - return all neighboring symbols along with their coordinates
         {
-            (bool ValidNeighbor, int Position) Symbol = (false, 0); // Search order: Bottom Left => Bottom Middle => Bottom Right => Left => Right => Top Left => Top Middle => Top Right
+            NeighborInfo result = new NeighborInfo();
 
-            char[] AdjacentChars = input.GetNeighbors(row, col);
-            if (!part2) // Part 1 needs the number to be adjacent to a symbol
+            NeighborInfo[] adjacentChars = input.GetNeighbors(row, col);
+
+            foreach (NeighborInfo adjacentChar in adjacentChars)
             {
-                foreach (char AdjacentChar in AdjacentChars)
+                if (!char.IsDigit(adjacentChar.Character) && adjacentChar.Character != '.')
                 {
-                    if (!char.IsDigit(AdjacentChar) && AdjacentChar != '.')
-                    {
-                        Symbol.ValidNeighbor = true;
-                    }
+                    result = new NeighborInfo { Row = adjacentChar.Row, Col = adjacentChar.Col, Character = adjacentChar.Character };
                 }
             }
-            else // Part2 needs two numbers to be adjacent to a '*'
-            {
-                foreach (char AdjacentChar in AdjacentChars)
-                {
-                    if (char.IsDigit(AdjacentChar) && Symbol.Position >= skip)
-                    {
-                        Symbol.ValidNeighbor = true;
-                    }
-                    else
-                    {
-                        Symbol.Position++;
-                    }
-                }
-            } 
 
-            return (Symbol);
+            return result;
         }
     }
 }

@@ -63,9 +63,9 @@
             return row >= 0 && row < grid.GetLength(0) && col >= 0 && col < grid.GetLength(1);
         }
 
-        public char[] GetNeighbors(int row, int col)
+        public NeighborInfo[] GetNeighbors(int row, int col)
         {
-            List<char> neighbors = new List<char>();
+            List<NeighborInfo> neighbors = new List<NeighborInfo>();
 
             // Check vertically, horizontally, and diagonally for characters
             for (int rowNum = row - 1; rowNum <= row + 1; rowNum++)
@@ -79,7 +79,8 @@
                     }
                     else if (IsValidPosition(rowNum, colNum))
                     {
-                        neighbors.Add(GetElement(rowNum, colNum));
+                        char character = GetElement(rowNum, colNum);
+                        neighbors.Add(new NeighborInfo { Row = rowNum, Col = colNum, Character = character });
                     }
                 }
             }
@@ -136,4 +137,19 @@
 
         public enum Direction { Up, Down, Left, Right, UpLeft, UpRight, DownLeft, DownRight }
     }
+
+    public class NeighborInfo
+    {
+        public int Row { get; set; }
+        public int Col { get; set; }
+        public char Character { get; set; }
+
+        public NeighborInfo()
+        {
+            Row = 0;
+            Col = 0;
+            Character = '\0';
+        }
+    }
+
 }
