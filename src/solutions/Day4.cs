@@ -75,8 +75,6 @@ namespace AdventOfCode.src.solutions
             // Create a list to store the 204 cards
             var Cards = new List<Card>();
 
-            int CardNumber = 1; // Increased each loop, so first loop will use card 1
-
             foreach (string line in input)
             {
                 string cleanLine = line;
