@@ -15,29 +15,46 @@ namespace AdventOfCode.src.solutions
         public static long Puzzle(string[] input, bool part2)
         {
             long Output;
-
-            if (part2) { Output = Part2(input); }
-            else { Output = Part1(input); }
-
+        
+            Output = Part2(input);
+        
             return Output;
         }
 
-        public static long Part1(string[] input)
+        public static long Part2(string[] input)
         {
             var StreamReader = new StreamReader(File.OpenRead("input-day5.txt"));
-
+        
             // Because seeds are static input, read seeds input to an array
             string CurrentLine = StreamReader.ReadLine().Substring("seeds:".Length);
-            long[] Seeds = CurrentLine.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(long.Parse).ToArray();
+        
+            long[] SeedInput = CurrentLine.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(long.Parse).ToArray();
 
+            Console.WriteLine("Building list...");
+            SeedRange[] Range = CalculateSeeds(SeedInput);
+            List<long> SeedList = new List<long>();
+            foreach (SeedRange ValuePair in Range)
+            {
+                long startingValue = ValuePair.BeginningRange;
+                long endingRange = ValuePair.EndingRange;
+
+                SeedList.AddRange(Enumerable.Range(0, (int)endingRange).Select(i => startingValue + i));
+            }
+
+            Console.WriteLine("List-building done");
+
+            long[] Seeds = SeedList.ToArray();
+            Console.WriteLine("Converted to array");
+        
             StreamReader.ReadLine(); // Skip empty line before maps
-
+        
+            Console.WriteLine("Processing maps");
             for (int Iteration = 0; Iteration <= MapCount; Iteration++)
             {
                 List<ConversionMap> MapList = new List<ConversionMap>();
                 StreamReader.ReadLine(); // Skip label for each map
                 CurrentLine = StreamReader.ReadLine();
-
+        
                 while (!string.IsNullOrEmpty(CurrentLine))
                 {
                     long[] MapComponents = CurrentLine.Split(' ').Select(long.Parse).ToArray(); // Split map into components
@@ -45,36 +62,69 @@ namespace AdventOfCode.src.solutions
                     CurrentLine = StreamReader.ReadLine(); // Next line
                 }
 
+                Console.WriteLine("Processing seeds");
                 Seeds = MapSeeds(MapList, Seeds);
             }
-
+        
             return Seeds.Min();
-        }
-
-        public static int Part2(string[] input)
-        {
-            return 0;
         }
 
         public static long[] MapSeeds(List<ConversionMap> Maps, long[] input)
         {
-            long[] OutputValues = input; // Input array is immutable due to foreach, so output is a separate array
+            // long[] OutputValues = new long[input.Length];
+            // Array.Copy(input, OutputValues, input.Length);
+
+            HashSet<long> seedSet = new HashSet<long>(input);
 
             foreach (long seed in input)
             {
-                bool Mapped = false; // Skip mapping if already mapped to prevent double-mapping
-                foreach (ConversionMap Map in Maps)
+                bool mapped = false;
+                foreach (ConversionMap map in Maps)
                 {
-                    long Index = Array.IndexOf(OutputValues, seed);
-                    if (Index != -1 && Map.ValidRange(seed) && !Mapped) // Array value should always exist, but this provides a failsafe in case it doesn't
+                    // Console.WriteLine($"Mapping seed {seed}...");
+                    if (seedSet.Contains(seed) && map.ValidRange(seed))
                     {
-                        OutputValues[Index] = Map.MapValue(seed);
+                        int index = Array.IndexOf(input, seed);
+                        input[index] = map.MapValue(seed);
+                        mapped = true;
+                        break;  // Break out of the inner loop once mapping is done
                     }
-                    else if (Index != -1 && !Mapped) { OutputValues[Index] = seed; }
+                }
+                if (!mapped)
+                {
+                    int index = Array.IndexOf(input, seed);
+                    input[index] = seed;
                 }
             }
 
-            return OutputValues;
+            return input;
+        }
+
+        public static SeedRange[] CalculateSeeds(long[] inputArray)
+        {
+            // Create an array to store SeedRange instances
+            SeedRange[] seedRanges = new SeedRange[inputArray.Length / 2];
+
+            // Populate SeedRange instances
+            for (int i = 0; i < inputArray.Length; i += 2)
+            {
+                seedRanges[i / 2] = new SeedRange(inputArray[i], inputArray[i + 1]);
+            }
+
+            // Output SeedRanges
+            return seedRanges;
+        }
+
+        public class SeedRange
+        {
+            public long BeginningRange { get; }
+            public long EndingRange { get; }
+
+            public SeedRange (long BeginningRange, long EndingRange)
+            {
+                this.BeginningRange = BeginningRange;
+                this.EndingRange = EndingRange;
+            }
         }
 
         // Store maps
@@ -91,16 +141,9 @@ namespace AdventOfCode.src.solutions
                 this.Range = Range;
             }
 
-            public bool ValidRange(long input) // Check if the input is within the source range start and range length
-            {
-                if (input >= SourceStart && input < (SourceStart + Range)) { return true; }
-                else return false;
-            }
+            public bool ValidRange(long input) => input >= SourceStart && input < (SourceStart + Range);
 
-            public long MapValue(long input) // Map input value to corresponding map value
-            {
-                return (this.DestStart + (input - this.SourceStart));
-            }
+            public long MapValue(long input) => this.DestStart + (input - this.SourceStart); // Map input value to corresponding map value
         }
     }
 }
