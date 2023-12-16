@@ -10,10 +10,8 @@ namespace AdventOfCode.src
     {
          static void Main()
          {
-            // int Output = Day1.Puzzle(File.ReadAllLines(".\\input-day1.txt"));
-            // var Output = Day2.Puzzle(File.ReadAllLines(".\\input-day2.txt"),12,13,14,true);
-            int Output = Day3.Puzzle(File.ReadAllLines(".\\input-day3.txt"), true); // Note: dataset padded by one column with '.' characters
-            Console.WriteLine($"Output: {Output}");
+            long Output = Day6.Puzzle(File.ReadAllLines(".\\input-day6.txt"), true);
+            File.WriteAllText(".\\log.txt", $"Output: {Output}");
         }
     }
 }
