@@ -11,15 +11,28 @@ namespace AdventOfCode.src.solutions
         // Puzzle entry point
         public static long Puzzle(string[] input, bool part2 = false)
         {
-            foreach (string card in input)
-            {
-                List<CardCount> cardCounts = CountCharacters(card);
+            CardType Hand = CardType.None;
 
-                // Display the results using the CardCount class
-                foreach (var cardCount in cardCounts)
-                {
-                    Console.WriteLine($"{cardCount.Card}: {cardCount.Count}");
-                }
+            foreach (string CardHand in input)
+            {
+                string[] SplitHand = CardHand.Split(' ');
+                string Card = SplitHand[0];
+                int Bet = int.Parse(SplitHand[1]);
+
+                List<CardCount> cardCounts = CountCharacters(Card);
+
+                if (cardCounts[0].Count == 5) { Hand = CardType.Five; }
+                else if (cardCounts[0].Count == 5 || cardCounts[1].Count == 4) { Hand = CardType.Four; }
+                else if (cardCounts[0].Count == 2 && cardCounts[1].Count == 3) { Hand = CardType.Full; }
+                else if (cardCounts[0].Count == 3 && cardCounts[1].Count == 2) { Hand = CardType.Full; }
+                else if (cardCounts.Any(Card => Card.Count == 3)) { Hand = CardType.Three; }
+                else if (cardCounts[1].Count == 2 && cardCounts[1].Count == 2) { Hand = CardType.Two; }
+                else if (cardCounts.Any(Card => Card.Count == 2)) { Hand = CardType.One; }
+                else { Hand = CardType.High; }
+                
+                Console.WriteLine($"Card: {Card}. Card Type: {Hand}. Bet: {Bet}");
+
+                cardCounts.Clear(); // Clear list at loop end
             }
 
             return 0;
@@ -38,12 +51,12 @@ namespace AdventOfCode.src.solutions
 
                 if (existingCardCount != null)
                 {
-                    // Increment the count if the card is present
+                    // Increment the count if the Card is present
                     existingCardCount.Count++;
                 }
                 else
                 {
-                    // Add a new CardCount object if the card is not present
+                    // Add a new CardCount object if the Card is not present
                     cardCounts.Add(new CardCount { Card = c, Count = 1 });
                 }
             }
@@ -57,4 +70,13 @@ namespace AdventOfCode.src.solutions
         public char Card { get; set; }
         public int Count { get; set; }
     }
+
+    public class CardHand
+    {
+        public string Card { get; set; }
+        public CardType CardType { get; set; }
+        public int Bet { get; set; }
+    }
+
+    public enum CardType { Five, Four, Full, Three, Two, One, High, None }
 }
