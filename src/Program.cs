@@ -10,7 +10,7 @@ namespace AdventOfCode.src
     {
          static void Main()
          {
-            long Output = Day6.Puzzle(File.ReadAllLines(".\\input-day6.txt"), true);
+            long Output = Day7.Puzzle(File.ReadAllLines(".\\input-day7.txt"), true);
             File.WriteAllText(".\\log.txt", $"Output: {Output}");
         }
     }
